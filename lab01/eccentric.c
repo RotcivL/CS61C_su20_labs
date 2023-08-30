@@ -1,8 +1,8 @@
 #include <stdio.h>
 
 /* Only change any of these 4 values */
-#define V0 0
-#define V1 -1
+#define V0 2
+#define V1 0
 #define V2 0
 #define V3 0
 
