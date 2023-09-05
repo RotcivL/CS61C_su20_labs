@@ -6,5 +6,13 @@
 
 void lfsr_calculate(uint16_t *reg) {
     /* YOUR CODE HERE */
+    int head = 0;
+    head ^= (*reg&1);
+    head ^= ((*reg>>2)&1);
+    head ^= ((*reg>>3)&1);
+    head ^= ((*reg>>5)&1);
+
+    *reg >>= 1;
+    *reg |= (head<<15);
 }
 
