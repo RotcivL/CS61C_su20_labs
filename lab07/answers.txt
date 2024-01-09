@@ -1,51 +1,71 @@
 Exercise 1
-	Scenario 1
-		1. 
-		2.
-		3.
+	Scenario 1 Hit Rate 0%
+		1. Step size of 8 (32 bytes = 4 byte int * 8) is same as cache size so 
+			 cache index is always the same, leading to all miss.
+		2. Still 0% as the index will remain the same with no associativity meaning 
+			 each access will require the previous acess to be evicted from cache.
+		3. Change step size to 1. We will have compulsory misses that store the 2 ints
+			 (4 bytes from current step and 4 bytes for next step) in a block. This would 
+			 lead to a hit in the next step leading to 50% hit rate.
 
 	Scenario 2
-		1.
-		2.
-		3.
-		4.
-		5.
+		1. 2 memory accesses per iteration in the inner loop.
+		2. Miss, hit, hit, hit.
+		3. 75% hit rate. First miss is compulsory miss (read array[i]), hit (write to array[i])
+		   but it stores values from array[i] to array[i+3]. So wehn going to next step, both
+			 read and write for array[i+2] are hits.
+		4. Appraoches 100% as the cache size is same as array size allowing the whole 
+			 array to be cached after the first iteration and thus achieve 100% hit rate
+			 future iterations.
+		5. Instead of iterating through the whole array linearly, break it up into 4 parts of 256
+		   bytes. Access those 256 bytes and apply the function for each rep to those 256 bytes
+			 of the array so we are completely done with it before moving on. This keeps those 256 
+			 bytes hot in cache so that it does not need to be circle back on later. 
+			 The first rep iteration will have 75% hit rate but future rep iterations will have 100%
+			 as 256 bytes are fully cached.
 
 	Scenario 3
-		1.
-		2.
-		3.
-		4.
-		5.
+		1. L1 50%. Block will store 2 ints. First step will be compulsory miss, 2nd will be hit.
+			 L2 0%.  Always compulsory miss.
+			 Overall 50%. 
+		2. 32 accesses, 16 misses. (128 bytes / 4 byte int)
+		3. 16 accesses -> misses from L1.
+		4. Rep count increase. On second iteration, as L1 is 64 bytes, it will only have the later half
+		   of array cached, so hit rate stays the same. L2 will have all L1 misses cached.
+		5. Number of blocks -> L1 and L2 hit rate remains the same. (compulsory misses for both).
+		   L1 block size -> L1 hit rate increases as first miss will store more bytes that would be hits
+			 for future accesses.
 
 Exercise 2
-	ijk:
-	ikj:
-	jik:
-	jki:
-	kij:
-	kji:
+	ijk: B=1, A=n, C=0, 1.489 Gflop/s
+	ikj: B=n, A=0, C=n, 0.114 Gflop/s
+	jik: B=1, A=n, C=0,	1.313 Gflop/s
+	jki: B=0, A=1, C=1, 7.014 Gflop/s
+	kij: B=n, A=0, C=n, 0.117 Gflop/s
+	kji: B=0, A=1, C=1, 4.281 Gflop/s
 
-	1.
-	2.
-	3.
+	1. jki best
+	2. ikj worst
+	3. Larger stride in inner loop leads to worse performance
 
 Exercise 3
 	Part 1
-		blocksize = 20, n = 100: 
-		blocksize = 20, n = 1000: 
-		blocksize = 20, n = 2000: 
-		blocksize = 20, n = 5000: 
-		blocksize = 20, n = 10000: 
+		blocksize = 20, n = 100: 0.005ms vs 0.008ms
+		blocksize = 20, n = 1000: 5.963ms vs 2.354 ms
+		blocksize = 20, n = 2000: 41.717 ms vs 9.429 ms
+		blocksize = 20, n = 5000: 363.031 ms vs 67.427 ms
+		blocksize = 20, n = 10000: 1659.72 ms vs 346.589 ms
 
-		1.
-		2.
+		1. n = 1000
+		2. when matrix is small, whole matrix(matrix row) can be stored in cache
 
 	Part 2
-		blocksize = 50, n = 10000:
-		blocksize = 100, n = 10000:
-		blocksize = 500, n = 10000:
-		blocksize = 1000, n = 10000:
-		blocksize = 5000, n = 10000:
+		blocksize = 50, n = 10000: 206.35ms 
+		blocksize = 100, n = 10000: 183.406 ms
+		blocksize = 500, n = 10000: 170.619 ms
+		blocksize = 1000, n = 10000: 287.706 ms
+		blocksize = 5000, n = 10000: 1555.23 ms
 
-		1.
+		1.  Performance increases until a certain point and then decreases. Once blocksize
+		    is too large, the degree of locality is a lot lower, thus causing more cache missing
+				-> performs similarly to non block transpose.
