@@ -53,9 +53,22 @@ long long int sum_simd(unsigned int vals[NUM_ELEMS]) {
 	
 	for(unsigned int w = 0; w < OUTER_ITERATIONS; w++) {
 		/* YOUR CODE GOES HERE */
-
+		__m128i sum_vector = _mm_setzero_si128();
+		for(unsigned int i = 0; i < NUM_ELEMS / 4 * 4; i+=4) {
+			__m128i curr = _mm_loadu_si128((__m128i *) (vals+i));
+			__m128i mask = _mm_cmpgt_epi32(curr, _127);
+			sum_vector = _mm_add_epi32(sum_vector, _mm_and_si128(curr, mask));
+		}
 		/* You'll need a tail case. */
+		int sum_array[4];
 
+		_mm_storeu_si128((__m128i *)(sum_array), sum_vector);
+		for(unsigned int i = NUM_ELEMS / 4 * 4; i < NUM_ELEMS; i++) {
+			if (vals[i] >= 128) {
+				sum_array[0] += vals[i];
+			}
+		}
+		result += sum_array[0] + sum_array[1] + sum_array[2] + sum_array[3];
 	}
 	clock_t end = clock();
 	printf("Time taken: %Lf s\n", (long double)(end - start) / CLOCKS_PER_SEC);
@@ -69,8 +82,33 @@ long long int sum_simd_unrolled(unsigned int vals[NUM_ELEMS]) {
 	for(unsigned int w = 0; w < OUTER_ITERATIONS; w++) {
 		/* COPY AND PASTE YOUR sum_simd() HERE */
 		/* MODIFY IT BY UNROLLING IT */
-
+		__m128i sum_vector = _mm_setzero_si128();
+		for(unsigned int i = 0; i < NUM_ELEMS / 16 * 16; i+=16) {
+			__m128i curr = _mm_loadu_si128((__m128i *) (vals+i));
+			__m128i mask = _mm_cmpgt_epi32(curr, _127);
+			sum_vector = _mm_add_epi32(sum_vector, _mm_and_si128(curr, mask));
+			
+			curr = _mm_loadu_si128((__m128i *) (vals+i+4));
+			mask = _mm_cmpgt_epi32(curr, _127);
+			sum_vector = _mm_add_epi32(sum_vector, _mm_and_si128(curr, mask));
+			
+			curr = _mm_loadu_si128((__m128i *) (vals+i+8));
+			mask = _mm_cmpgt_epi32(curr, _127);
+			sum_vector = _mm_add_epi32(sum_vector, _mm_and_si128(curr, mask));
+			
+			curr = _mm_loadu_si128((__m128i *) (vals+i+12));
+			mask = _mm_cmpgt_epi32(curr, _127);
+			sum_vector = _mm_add_epi32(sum_vector, _mm_and_si128(curr, mask));
+		}
 		/* You'll need 1 or maybe 2 tail cases here. */
+		int sum_array[4];
+		_mm_storeu_si128((__m128i *)(sum_array), sum_vector);
+		for(unsigned int i = NUM_ELEMS /16 * 16; i < NUM_ELEMS; i++) {
+			if (vals[i] >= 128) {
+				sum_array[0] += vals[i];
+			}
+		}
+		result += sum_array[0] + sum_array[1] + sum_array[2] + sum_array[3];
 
 	}
 	clock_t end = clock();
