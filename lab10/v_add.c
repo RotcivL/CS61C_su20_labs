@@ -16,18 +16,25 @@ void v_add_naive(double* x, double* y, double* z) {
 
 // Edit this function (Method 1) 
 void v_add_optimized_adjacent(double* x, double* y, double* z) {
-     #pragma omp parallel
+  #pragma omp parallel
 	{
-		for(int i=0; i<ARRAY_SIZE; i++)
-			z[i] = x[i] + y[i];
+		int threadID = omp_get_thread_num();
+		int threadCount = omp_get_num_threads();
+		for(int i=0; i<ARRAY_SIZE; i++) {
+			if (i % threadCount == threadID) z[i] = x[i] + y[i];
+		}
 	}
 }
 
 // Edit this function (Method 2) 
 void v_add_optimized_chunks(double* x, double* y, double* z) {
-          #pragma omp parallel
+  #pragma omp parallel
 	{
-		for(int i=0; i<ARRAY_SIZE; i++)
+		int threadID = omp_get_thread_num();
+		int threadCount = omp_get_num_threads();
+		int blockSize = ARRAY_SIZE / threadCount + 1;
+
+		for(int i=blockSize * threadID; i<blockSize * (threadID+1) && i < ARRAY_SIZE; i++)
 			z[i] = x[i] + y[i];
 	}
 }
@@ -61,6 +68,7 @@ int main() {
 
 	// Test framework that sweeps the number of threads and times each run
 	double start_time, run_time;
+	omp_set_num_threads(4);
 	int num_threads = omp_get_max_threads();	
 
 

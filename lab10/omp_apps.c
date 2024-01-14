@@ -22,12 +22,16 @@ double dotp_naive(double* x, double* y, int arr_size) {
 // EDIT THIS FUNCTION PART 1
 double dotp_manual_optimized(double* x, double* y, int arr_size) {
   double global_sum = 0.0;
-#pragma omp parallel
+  #pragma omp parallel
   {
-#pragma omp for
-    for (int i = 0; i < arr_size; i++)
-#pragma omp critical
-      global_sum += x[i] * y[i];
+    double local_sum = 0.0;
+    #pragma omp for
+    for (int i = 0; i < arr_size; i++) {
+      local_sum += x[i] * y[i];
+    }
+    
+    #pragma omp critical
+    global_sum += local_sum;
   }
   return global_sum;
 }
@@ -35,13 +39,11 @@ double dotp_manual_optimized(double* x, double* y, int arr_size) {
 // EDIT THIS FUNCTION PART 2
 double dotp_reduction_optimized(double* x, double* y, int arr_size) {
   double global_sum = 0.0;
-#pragma omp parallel
-  {
-#pragma omp for
-    for (int i = 0; i < arr_size; i++)
-#pragma omp critical
-      global_sum += x[i] * y[i];
+  #pragma omp parallel for reduction(+: global_sum)
+  for (int i = 0; i < arr_size; i++) {
+    global_sum += x[i] * y[i];
   }
+  
   return global_sum;
 }
 
@@ -58,6 +60,7 @@ char* compute_dotp(int arr_size) {
     serial_result += x[i] * y[i];
   }
 
+  omp_set_num_threads(4);
   int num_threads = omp_get_max_threads();
   for (int i = 1; i <= num_threads; i++) {
     omp_set_num_threads(i);
