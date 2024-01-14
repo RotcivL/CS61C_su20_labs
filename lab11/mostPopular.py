@@ -6,7 +6,7 @@ from pyspark import SparkContext,SparkConf
 def splitDocument(document):
     """Returns a list of all words in the document"""
     return re.findall(r"\w+", document[1])
-
+    
 def toPairs(word):
     """ Creates `(key, value)` pairs where the word is the key and 1 is the value """
     return (word, 1)
@@ -19,6 +19,9 @@ def sumCounts(a, b):
     Note that Map/flatMap style functions take in one argument while Reduce functions take in two
 """
 
+def swap(pair):
+    return (pair[1], pair[0])
+
 def mostPopular(file_name, output="spark-wc-out-mostPopular"):
     sc = SparkContext("local[8]", "WordCount", conf=SparkConf().set("spark.hadoop.validateOutputSpecs", "false"))
     """ Reads in a sequence file FILE_NAME to be manipulated """
@@ -26,7 +29,9 @@ def mostPopular(file_name, output="spark-wc-out-mostPopular"):
 
     counts = file.flatMap(splitDocument) \
                  .map(toPairs) \
-                 .reduceByKey(sumCounts) 
+                 .reduceByKey(sumCounts) \
+                 .map(swap) \
+                 .sortByKey(False)
                  # TODO: add appropriate extra transformations here
 
     """ Takes the dataset stored in counts and writes everything out to OUTPUT """
