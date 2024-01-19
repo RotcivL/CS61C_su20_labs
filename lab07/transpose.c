@@ -21,7 +21,7 @@ void transpose_blocking(int n, int blocksize, int *dst, int *src) {
             for (int x = 0; x < blocksize; x++) {
                 if (x + i < n) {
                     for (int y = 0; y < blocksize; y++) {
-                        if (y + j > n) {
+                        if (y + j < n) {
                             dst[y + j + (x + i) * n] = src[x + i + (y + j) * n];
                         }
                     }
